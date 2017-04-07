@@ -1,3 +1,4 @@
+# By considering the terms in the Fibonacci sequence whose values do not exceed four million, find the sum of the even-valued terms.
 total = 0
 
 nextfib = 1
@@ -7,8 +8,8 @@ ctr = 2
 
 while nextfib < 4000000 do
   if ctr == 3
+    # only every third fibonacci number is even
     total += nextfib
-#    puts "Nextfib is #{nextfib}"
     ctr = 1
   else
     ctr += 1

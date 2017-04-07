@@ -1,3 +1,4 @@
+# Find the largest palindrome made from the product of two 3-digit numbers.
 n1 = 999
 n2 = 999
 i = 1
@@ -24,6 +25,7 @@ end
 
 i = palindromes[0]
 for x in 1..(palindromes.length-1)
+  # Search the saved palindromes to find the largest.
   if palindromes[x] > i
     i = palindromes[x]
   end
