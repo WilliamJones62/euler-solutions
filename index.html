@@ -35,7 +35,9 @@
       var attempts = 0;
       var attemptsMsg = ' ';
       var matchFound = false;
-      var hintNeeded = false;
+      var reverse = false;
+      var myPeeps=[];
+
 
       var Face = React.createClass({
           getInitialState: function() {
@@ -52,7 +54,7 @@
           render: function() {
               var classes = React.addons.classSet({
                   'name': true,
-                  'hidden': !this.state.clicked,
+                  'hidden': !this.state.clicked && !reverse,
                   'right': this.state.clicked && this.props.selected,
                   'wrong': this.state.clicked && !this.props.selected
               });
@@ -86,17 +88,33 @@
       var Game = React.createClass({
 
           render: function() {
-              var faces = this.props.people.map(function(p) {
-                  return <Face key={Math.random()} url={'http:' + p.headshot.url} name={p.firstName + ' ' + p.lastName} selected={p.selected}/>;
-              });
+              if (reverse){
+                  var names = this.props.people.map(function(p) {
+                      return <Face key={Math.random()} url={'http://d16b4kgyytl7c7.cloudfront.net/~/media/AstonVilla/Club Crests/ClubCrestVilla2x_Alt.ashx?mw=100&vs=1&d=20160510T094428Z&hash=730B04C53656836EEF35F24CBA942A3B06988941'
+                          } name={p.firstName + ' ' + p.lastName} selected={p.selected}/>;
+                  });
+                  var selectedName = _.find(this.props.people, {selected: true});
+                  return (
+                      <div>
+                          <h1 id="question-wrapper">Who is this?</h1>
+                          <img src={ 'http:' + selectedName.headshot.url } />
+                          <div>{names}</div>
+                      </div>
+                  );
+              }
+              else{
+                  var faces = this.props.people.map(function(p) {
+                      return <Face key={Math.random()} url={'http:' + p.headshot.url} name={p.firstName + ' ' + p.lastName} selected={p.selected}/>;
+                  });
 
-              var selectedFace = _.find(this.props.people, {selected: true});
-              return (
-                  <div>
-                      <h1 id="question-wrapper">Who is {selectedFace.firstName + ' ' + selectedFace.lastName}?</h1>
-                      <div>{faces}</div>
-                  </div>
-              );
+                  var selectedFace = _.find(this.props.people, {selected: true});
+                  return (
+                      <div>
+                          <h1 id="question-wrapper">Who is {selectedFace.firstName + ' ' + selectedFace.lastName}?</h1>
+                          <div>{faces}</div>
+                      </div>
+                  );
+              }
           }
       });
 
@@ -108,10 +126,29 @@
           },
 
           hint: function() {
-              hintNeeded = true;
+              for (i = 0; i < myPeeps.length; i++){
+                  if (!myPeeps[i].selected){
+                      myPeeps.splice(i,1);
+                      i = 6;
+                  }
+              }
+              this.setState({ people: myPeeps });
           },
 
           play: function(prefix) {
+              if (prefix == '1'){
+                // Reverse
+                reverse = true;
+                prefix = '';
+              }
+              else{
+                reverse = false;
+                if (prefix == '2'){
+                  // find names that begin with user entered characters
+                  prefix = document.getElementById("myText").value;
+                }
+              }
+
               prefix = prefix || '';
 
               var rand = _(people)
@@ -125,11 +162,14 @@
                               .shuffle()
                               .first(5)
                               .value();
+                              
+              if (!rand.length == 0){
+                  rand[0].selected = true;
+                  rand = _.shuffle(rand);
+                  myPeeps=rand;
 
-              rand[0].selected = true;
-              rand = _.shuffle(rand);
-
-              this.setState({ people: rand });
+                  this.setState({ people: rand });
+              }
           },
 
           render: function() {
@@ -145,8 +185,10 @@
                   <div>
                       <button onClick={this.play}> Play </button>
                       <button onClick={_.partial(this.play, 'mat')}> Mat* </button>
-                      <button onClick={_.partial(this.play, 'm')}> M* </button>
+                      <button onClick={_.partial(this.play, '1')}> Reverse </button>
                       <button onClick={this.hint}> Hint </button>
+                      <button onClick={_.partial(this.play, '2')}> Begins </button>
+                      <input type="text" id="myText"></input>
 
                       {game}
                   </div>
